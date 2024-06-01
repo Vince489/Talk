@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voice Recorder</title>
+    <style>
+        button {
+            margin: 10px;
+            padding: 10px;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Voice Recorder</h1>
+    <button id="recordButton">Start Recording</button>
+    <button id="stopButton" disabled>Stop Recording</button>
+    <button id="playButton" disabled>Play Recording</button>
+
+    <script>
+     let mediaRecorder;
+let audioChunks = [];
+let audioBlob;
+let audioUrl;
+let audio;
+
+const recordButton = document.getElementById('recordButton');
+const stopButton = document.getElementById('stopButton');
+const playButton = document.getElementById('playButton');
+
+recordButton.addEventListener('click', async () => {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    mediaRecorder = new MediaRecorder(stream);
+    
+    mediaRecorder.ondataavailable = event => {
+        audioChunks.push(event.data);
+    };
+
+    mediaRecorder.onstop = () => {
+        audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+        audioUrl = URL.createObjectURL(audioBlob);
+        audio = new Audio(audioUrl);
+        audioChunks = [];
+    };
+
+    mediaRecorder.start();
+    recordButton.disabled = true;
+    stopButton.disabled = false;
+    playButton.disabled = true;
+});
+
+stopButton.addEventListener('click', () => {
+    mediaRecorder.stop();
+    recordButton.disabled = false;
+    stopButton.disabled = true;
+    playButton.disabled = false;
+});
+
+playButton.addEventListener('click', () => {
+    if (audio) {
+        audio.play();
+    }
+});
+
+    </script>
+</body>
+</html>
